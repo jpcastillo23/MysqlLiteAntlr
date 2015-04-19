@@ -15,11 +15,13 @@ public class Misqlobject implements Comparable<Misqlobject>, InterfazPila<Misqlo
     private String temp;
     private Object value;
     private boolean fue_exitoso ;
+    
 
     private Misqlobject() {
         // private constructor: only used for NULL and VOID
         value = new Object();
         fue_exitoso = false;
+        Tabla.saveTable();
     }
 
     public Misqlobject(Object v) {

@@ -66,7 +66,7 @@ public class Mipropiovisitor extends MISQLGRAMMARBaseVisitor<Misqlobject> {
 	@Override 
 	public Misqlobject visitSql_stmt(@NotNull MISQLGRAMMARParser.Sql_stmtContext ctx) { 
 		System.out.println("2 visitSql_stmt");
-		Misqlobject miretorno = new Misqlobject();
+		Misqlobject miretorno = new Misqlobject(null);
 		//visitChildren(ctx);   OJO CON ESTO, DEBE DE SER OBJETO BOOLEANNO MULA
 		Misqlobject luego = new Misqlobject( visitChildren(ctx) );
 		System.out.println(luego);
