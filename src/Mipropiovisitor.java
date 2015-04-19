@@ -56,36 +56,25 @@ public class Mipropiovisitor extends MISQLGRAMMARBaseVisitor<Misqlobject> {
 			 * 
 			**/
 			System.out.println(visit( ctx.getChild(i*2) )+" "+i);
-			/**
-			 *    pruebas de como se desglosan las intrucciones por ramificacion en 
-			 *    ANTLR4
-			System.out.println(ctx.getChildCount() +" " +ctx.getChild(0).getChildCount() +" \n");
-			System.out.println("\t \n"+ctx.getText() +" popo " +ctx.getChild(0).getText() +" ");
-			System.out.println(ctx.sql_stmt(i).getText());
-			//  
-			System.out.println("fucker " + cuantos);
-			iterable =  new Misqlobject(visitChildren(ctx.sql_stmt(i)));
-			System.out.println(iterable.retornoTipoObjeto());
-			System.out.println("fucker3");
-			continuar = iterable.asBoolean();
-			System.out.println("fucker2");
-			if (!continuar){
-				return new Misqlobject(false);
-			}*/
+
 		}
 		Misqlobject todoexitoso = new Misqlobject(new Boolean(true))   ;
+		todoexitoso.setSuccesful(true);
 		return  		todoexitoso;
 	}
 	
 	@Override 
 	public Misqlobject visitSql_stmt(@NotNull MISQLGRAMMARParser.Sql_stmtContext ctx) { 
 		System.out.println("2 visitSql_stmt");
+		Misqlobject miretorno = new Misqlobject();
 		//visitChildren(ctx);   OJO CON ESTO, DEBE DE SER OBJETO BOOLEANNO MULA
 		Misqlobject luego = new Misqlobject( visitChildren(ctx) );
 		System.out.println(luego);
-		Misqlobject boleano = new Misqlobject(new Boolean( false));
+		miretorno = new Misqlobject(new Boolean( false ));
+		
 		//System.out.println(boleano.toString()+"PRUEBA");
-		return boleano;
+		miretorno.setSuccesful(true);
+		return miretorno;
 	}	
 	/**
 	 * 	CREACION DE NUEVA TABLA
@@ -100,48 +89,52 @@ public class Mipropiovisitor extends MISQLGRAMMARBaseVisitor<Misqlobject> {
 	@Override 
 	public Misqlobject visitCreate_table_stmt(@NotNull MISQLGRAMMARParser.Create_table_stmtContext ctx) { 
 		System.out.println("3 visitCreate_table_stmt");
-		//verificacion si ya hay cargada una base_de_datos
-		if(using_Databases.isEmpty()){
-			return new Misqlobject(false);
-		}
+
 		int how_many = ctx.getChildCount();
 		boolean posee_ya_archivo = false;
 		String data_Base_name = "";
+		String escritura_por_tabla = "";
 		ArrayList<String> listado_db_creado = new ArrayList<String>();
 		System.out.println(ctx.database_name().getText());
-		if(ctx.database_name().getText()==null){
-			System.out.println("si funciona");
-		}
-		//Misqlobject mi_objeto  = new Misqlobject( visit(ctx.database_name()));//objeto string
-		Misqlobject mi_objeto2 = new Misqlobject( visit(ctx.table_name() ));//objeto string
-		System.out.println(mi_objeto2 +" en linea 46, Crate_table");
 		DLL_manager manejador = new DLL_manager();
+		Misqlobject mi_objeto3 = null;
+		
+		if(ctx.database_name().getText()==null){
+			System.out.println("si funciona, pero no hay databases en la sintaxis");
+		}
+		// VISITO Y MIRO SI EXISTE OPERACION BUENA EN LA RECOLECCION DEL NOMBRE
+		Misqlobject mi_objeto2 = new Misqlobject( visit(ctx.table_name() ));//objeto NOMBRE TABLA
+		System.out.println(mi_objeto2 +" en linea 46, Crate_table");
 		//NECESITO UNA FUNCION QUE BUSQUE LAS BASES DDE DATOS Y PUEDA BUSCAR QUE ESTA
 		//EN USO SI EN TAL caso EL USUARIO NO COLOCA EL Database.table
 		//LISTADO_CREADO DA EL NOMBRE DE TODAS LAS BASES DE DATOS Y BUSCA EN CADA UNA
 		listado_db_creado = manejador.listadodeDBenRegistro( manejador.getcarpetaRootMYDBReg());
-		//estoy buscando el la capteta de la DB la informaciond e sus tablas
-		posee_ya_archivo = (manejador.buscarTextoenArchivo(manejador.getDireccionMYDB()+using_Databases.get(0)+"reg.txt"  , mi_objeto2.asString()) >0);
+
+		//    BUSCANDO SI EXISTE TABLA EN REGISTRO DE DATABASES
+		try{
+			posee_ya_archivo = (manejador.buscarTextoenArchivo(manejador.getDireccionMYDB()+using_Databases.get(0)+"reg.txt"  , mi_objeto2.asString()) >0);
+		}catch(Exception e){
+			System.out.println("Error: File to search doesnt exist");
+			e.printStackTrace();
+		}
 		if(posee_ya_archivo){
-			return new Misqlobject(false);
+			mi_objeto2.setSuccesful(false);
+			return mi_objeto2;
+		}
+		// CREANDO REGISTRO DE LA META DATA
+		escritura_por_tabla = "TABLA  :"+mi_objeto2.asString();
+		if(!ctx.table_constraint().isEmpty()){
+			int table_count_elements = ctx.table_constraint().size();
+			for ( int i = 0 ; i < table_count_elements ;i++){
+				mi_objeto3 = new Misqlobject( visit(ctx.table_constraint(i)) );//objeto string
+			}
 		}
 		
-		/**for(String archivo : listado_db_creado){  
-			//si busco en el texto ubicado en la carpeta de la DB fila por fila si posee la tabla que deseo crear
-			try{//                                                                                       /        DATABASE 			reg.txt		, 	
-				posee_ya_archivo = (manejador.buscarTextoenArchivo(manejador.getDireccionMYDB()+archivo.split(".")[0]+"reg.txt"  , mi_objeto2.asString()) >0);
-			if( posee_ya_archivo &&  true ){
-				//ya tenia la tabla en la database de datos, denegar!!!
-				System.out.println("LA TABLA YA EXISTE EN SU BASE DE DATOS");
-				return new Misqlobject(false);
-				}
-			}catch(Exception e){
-				System.out.println("Murio por que no puso database");
-			}	
-		}*/
-		manejador.Anadir_fila_fichero(manejador.getDireccionMYDB()+File.separator + using_Databases.get(0) +"reg.txt" , mi_objeto2.asString());
+		//CREANDO REGISTRO METADATA DE LA TABLA 
+		manejador.Anadir_fila_fichero(manejador.getDireccionMYDB()+File.separator + using_Databases.get(0) +"reg.txt" , escritura_por_tabla );
 		//getDireccionMYDB()
-		return new Misqlobject(true) ;
+		mi_objeto2.setSuccesful(false);
+		return  mi_objeto2 ;
 	}
 	
 	public void print(String valor){
@@ -162,22 +155,22 @@ public class Mipropiovisitor extends MISQLGRAMMARBaseVisitor<Misqlobject> {
 		DLL_manager manejador = new DLL_manager();
 		boolean existe_en_archivo, existe_directorio, prueba_sobreescritura1;
 		Misqlobject[] nuevo ;
+		System.out.print("-Visitando data_base_name");
 		String nombre_data_base = visit(ctx.database_name()).asString() ;
+		System.out.println("-Retornando data_base_name: " + nombre_data_base);
+
 		String archivodbname = nombre_data_base +".db";
 		Misqlobject retorno = new Misqlobject(nombre_data_base);
-		System.out.println(retorno);
-		System.out.println("probando CREATE DATABASE");
-		String error = "ERROR";
 		
 		//Si existe no creo ni la carpeta ni nuestro registro y escribo en ella la nueva 
 		// base  de datos
 		
 		try{     //REGISTRO DE BASE DE DATOS
-			System.out.println("acavpy " + retorno);
+			System.out.println("\t||valor de busqueda en regustro||: " + retorno);
 			boolean prueba_sobreescritura = (manejador.isinDatabaseFichero(manejador.getcarpetaRootMYDBReg(),nombre_data_base));
 			if(prueba_sobreescritura){
 				//si encuentra esto es por que esta sobreescribiendo
-				System.out.println(error + " trato de sobre escritura");
+				System.out.println("Error:" + " trato de sobre escritura");
 				return new Misqlobject(false);
 			};
 
@@ -423,9 +416,11 @@ public class Mipropiovisitor extends MISQLGRAMMARBaseVisitor<Misqlobject> {
 		try{     //REGISTRO DE BASE DE DATOS
 			System.out.println("Existe Registro? " + manejador.existeRegistroDB());
 			if( !manejador.existeRegistroDB()){
-				System.out.println("Creando Registro de DB" );
+				System.out.println("\tCreando Registro de DB" );
 				//manejador.inicializar_RegistroDBcarpeta();
+				manejador.inicializarRUTARegistroDB();
 				manejador.inicializarRegistroDB();
+				System.out.println("\tRegistro de DB creado" );
 			};
 		}catch(Exception e){
 			print("Error de manejo de backend");
@@ -739,9 +734,8 @@ public class Mipropiovisitor extends MISQLGRAMMARBaseVisitor<Misqlobject> {
 		System.out.println("68 visitDatabase_name");
 		String Mi_database_name = new String(ctx.getText());
 		Misqlobject nuevo = new Misqlobject(Mi_database_name);
-
-		System.out.println("68 " + Mi_database_name +" " +nuevo.retornoTipoObjeto());
-
+		System.out.println("68:\n\t" + Mi_database_name +"-> del tipo: " +nuevo.retornoTipoObjeto());
+		nuevo.setSuccesful(true);
 		return nuevo;
 	}
  

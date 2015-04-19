@@ -126,6 +126,14 @@ create_table_stmt
    ( database_name '.' )? table_name
    ( '(' column_def ( ',' column_def )* ( ',' table_constraint )* ')' ( K_WITHOUT IDENTIFIER )? | K_AS select_stmt  ) 
  ;
+ 
+ table_constraint
+ : ( K_CONSTRAINT name )?
+   ( ( K_PRIMARY K_KEY | K_UNIQUE ) '(' indexed_column ( ',' indexed_column )* ')' conflict_clause
+   | K_CHECK '(' expr ')'
+   | K_FOREIGN K_KEY '(' column_name ( ',' column_name )* ')' foreign_key_clause
+   )
+ ;
 
 create_trigger_stmt
  : K_CREATE ( K_TEMP | K_TEMPORARY )? K_TRIGGER ( K_IF K_NOT K_EXISTS )?
@@ -365,13 +373,7 @@ indexed_column
  : column_name ( K_COLLATE collation_name )? ( K_ASC | K_DESC )?
  ;
 
-table_constraint
- : ( K_CONSTRAINT name )?
-   ( ( K_PRIMARY K_KEY | K_UNIQUE ) '(' indexed_column ( ',' indexed_column )* ')' conflict_clause
-   | K_CHECK '(' expr ')'
-   | K_FOREIGN K_KEY '(' column_name ( ',' column_name )* ')' foreign_key_clause
-   )
- ;
+
 
 with_clause
  : K_WITH K_RECURSIVE? cte_table_name K_AS '(' select_stmt ')' ( ',' cte_table_name K_AS '(' select_stmt ')' )*

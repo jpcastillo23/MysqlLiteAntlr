@@ -79,6 +79,9 @@ public class DLL_manager {
 	public int buscarTextoenArchivo(String archivo, String palabra){
 		int numero = -1;
 		File folder = new File(archivo);
+		if (!folder.exists()){
+			System.out.println("\t\tError: No existe archivo en quien buscar");
+		}
 		FileReader fw = null;
 		BufferedReader bw = null;
 		BufferedReaderIterable bri = null;
@@ -139,16 +142,28 @@ public class DLL_manager {
 		folder.mkdirs();
 		//folder.createNewFile();
 	}
-
+	public void inicializarRUTARegistroDB() throws Exception{
+		File folder =null;
+		try{
+			folder = new File(getDireccionMYDB());
+		}catch(Exception h){ System.out.println("puchica nose creo");};
+		folder.mkdirs();
+	}
+	
+	
 	public void inicializarRegistroDB() throws Exception{
 		File folder =null;
 		try{
 			folder = new File(getcarpetaRootMYDBReg());
 		}catch(Exception h){ System.out.println("puchica nose creo");};
-		//folder.mkdirs();
-		folder.createNewFile();
+		if (!folder.exists()){
+			folder.createNewFile();
+			System.out.println("\t\tEntrando al Sistema para generacion");
+		};
 		writeInFileFila(getcarpetaRootMYDBReg()," ") ;
 	}
+	
+	
 	public boolean existeRegistroDB(){
 		File folder = new File(getcarpetaRootMYDBReg());
 		return folder.exists();
@@ -171,6 +186,18 @@ public class DLL_manager {
 	 *   		user/netbeans/mysql/proyecto/myDB/
 	 * */
 	public boolean Crear_registro_tabla_y_base_datos(String Data_base_name){
+		String[] cmd = {"/usr/bin/open","/Users/josecastillo/Netbeans/Mi_Sql_pequeño/MyDB"};
+		String[] cmd2 = {"touch","/Users/josecastillo/Netbeans/Mi_Sql_pequeño/refrescando.txt"};
+		String[] cmd3 = {"rm","–Rf","/Users/josecastillo/Netbeans/Mi_Sql_pequeño/refrescando.txt"};
+		String[] cmd4 = {"/usr/bin/mdutil","–E","/Users/josecastillo/Netbeans/Mi_Sql_pequeño/"};
+
+		try {
+			//Runtime.getRuntime().exec();
+			System.out.println();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		String separator = separatorOSDirectory();
 		String nueva_direccion = " ";
 		boolean efectuo_cambio = false;
@@ -216,15 +243,18 @@ public class DLL_manager {
 		boolean efectuo_cambio = false;
 		nueva_direccion=dir + separator +"MyDB"+ separator + Data_base_name + separator;
 		File folder = new File(nueva_direccion);
-		if (!folder.mkdirs()){ 		//crear nuevamente el directorio
-			try {
-				folder.createNewFile();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if (!folder.exists()){ 		//crear nuevamente el directorio
+			if(!folder.mkdirs()){
+				try {
+					
+					folder.createNewFile();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				efectuo_cambio=true;
 			}
-			efectuo_cambio=true;
-		}else{System.out.println("Base de Datos no ha sido Creado");};
+		}else{System.out.println("Base de Datos no ha sido Creado - YA EXISTIA");};
 		return efectuo_cambio;		
 	}
 	public boolean Inicializar_Carpeta_base_datos(String Data_base_name){
@@ -309,9 +339,8 @@ public class DLL_manager {
 		File nuevo = null;
 		File viejo = null;
 		String tempo_direc = dir +File.separator+"MyDB"+File.separator+ "temp.txt";
-		System.out.println(tempo_direc);
+		System.out.println("\t Reescribiendo direcciones: " + tempo_direc);
 		boolean modificado = false;
-		System.out.println(tempo_direc);
 		try {
 			nuevo = new File(tempo_direc);
 			nuevo.createNewFile();
@@ -434,13 +463,13 @@ public class DLL_manager {
 		boolean modificado = false;
 		try {
 			
-			System.out.println(tempo_direc);
 			nuevo = new File(tempo_direc); //escribir en temporal NUEVO
 			viejo = new File(direccion);
 			if(!nuevo.exists()){
 				nuevo.createNewFile();
+				System.out.println("-Escribiendo archivo temporal");
 			}
-			System.out.println(viejo.exists() + "" + nuevo.exists() + nuevo.getPath());
+			System.out.println("\t old: " + viejo.exists() + "\t new: " + nuevo.exists() +"\t PATH: "+ nuevo.getPath());
 			fr = new FileReader(viejo);			
 			fw = new FileWriter(nuevo);
 			
@@ -456,6 +485,7 @@ public class DLL_manager {
     		    fw.close();
     		    br.close();
     		    fr.close();
+    		    System.out.println("-Intercambio temporales temporal->nuevo");
     		    Files.copy( nuevo.toPath()  , viejo.toPath() , REPLACE_EXISTING );
     		    return true;
 	    }catch(Exception e){

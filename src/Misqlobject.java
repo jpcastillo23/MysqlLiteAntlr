@@ -14,10 +14,12 @@ public class Misqlobject implements Comparable<Misqlobject>, InterfazPila<Misqlo
     private int index;
     private String temp;
     private Object value;
+    private boolean fue_exitoso ;
 
     private Misqlobject() {
         // private constructor: only used for NULL and VOID
         value = new Object();
+        fue_exitoso = false;
     }
 
     public Misqlobject(Object v) {
@@ -304,6 +306,14 @@ public class Misqlobject implements Comparable<Misqlobject>, InterfazPila<Misqlo
 	          return NULL;
 	       }
 		 return obtencion_objeto;
+	 }
+	 
+	 public boolean getSuccesful(){
+		 return this.fue_exitoso;
+	 }
+	 
+	 public void setSuccesful(boolean fue_o_no){
+		 this.fue_exitoso = fue_o_no;
 	 }
 
 }
